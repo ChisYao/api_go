@@ -4,9 +4,11 @@ import (
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"go_web/internal/domain"
 	"go_web/internal/service"
 	"net/http"
+	"time"
 	//"regexp"
 )
 
@@ -36,7 +38,8 @@ func (h *UserHandler) RegistryRoutes(server *gin.Engine) {
 	group := server.Group("/user")
 	// 分散注册路由
 	group.POST("/signup", h.SignUp)
-	group.POST("/login", h.Login)
+	//group.POST("/login", h.Login)
+	group.POST("/login", h.LoginWithJWT)
 	group.POST("/edit", h.Edit)
 	group.GET("/profile", h.Profile)
 
@@ -110,7 +113,7 @@ func (h *UserHandler) Login(context *gin.Context) {
 		sess.Set("userId", u.Id)
 		// 缓存相关配置
 		sess.Options(sessions.Options{
-			MaxAge: 15 * 60,
+			MaxAge: 15 * 60, // 有效时间.
 			//HttpOnly: true,
 		})
 		// 保存缓存
@@ -180,4 +183,54 @@ func (h *UserHandler) Profile(context *gin.Context) {
 		context.String(http.StatusOK, "系统错误!")
 	}
 
+}
+
+func (h *UserHandler) LoginWithJWT(context *gin.Context) {
+	// 请求参数
+	type LoginReq struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	var req LoginReq
+	// 解析请求参数
+	if err := context.Bind(&req); err != nil {
+		return
+	}
+
+	// 调用Repository层函数
+	u, err := h.svc.Login(context, req.Email, req.Password)
+
+	switch err {
+	case nil:
+		// 使用JWT的方案
+		uc := UserClaims{
+			Uid:       u.Id,
+			UserAgent: context.GetHeader("User-Agent"),
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 30)), // 过期时间30分钟
+			},
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodHS512, uc)
+		tokenStr, err := token.SignedString([]byte(JWTKey))
+
+		if err != nil {
+			context.String(http.StatusOK, "系统错误!")
+			return
+		}
+		context.Header("x-jwt-token", tokenStr)
+		context.String(http.StatusOK, "登录成功!")
+	case service.ErrorInvalidEmailOrPassword:
+		context.String(http.StatusOK, "邮箱名称或密码不正确,请更改后重试!")
+	default:
+		context.String(http.StatusOK, "系统错误!")
+	}
+}
+
+var JWTKey = []byte("iyGFLRg6BaBOKbbMaTldalPWn3RaS1r0oACtwaT4IrraopfBWQ095paBVUgr88UV")
+
+type UserClaims struct {
+	jwt.RegisteredClaims
+	Uid       int64
+	UserAgent string
 }

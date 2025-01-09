@@ -1,6 +1,6 @@
 version: "3"
 services:
-  mysql8:
+  mysql:
     image: mysql:8.4
     restart: always
     environment:
@@ -9,5 +9,14 @@ services:
       # 初始化脚本
       - ./script/mysql/:/docker-entrypoint-initdb.d/
     ports:
-      # 端口映射,外部映射端口:13316
+      # 端口映射,外部映射端口:
       - 13316:3306
+
+
+  redis:
+    image: "bitnami/redis:latest"
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 6379:6379
