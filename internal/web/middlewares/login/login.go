@@ -17,7 +17,8 @@ func (m *MiddlewareBuilderLogin) CheckLogin() gin.HandlerFunc {
 		}
 
 		sess := sessions.Default(context)
-		if sess.Get("userId") == nil {
+		userId := sess.Get("userId")
+		if userId == nil {
 			// 中断执行
 			context.AbortWithStatus(http.StatusUnauthorized)
 		}

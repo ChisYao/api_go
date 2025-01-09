@@ -22,8 +22,13 @@ type User struct {
 	Id       int64  `gorm:"primary_key"`
 	Email    string `gorm:"unique"`
 	Password string
-	CTime    int64 // 创建时间
-	UTime    int64 // 更新时间
+
+	Name   string
+	Gender string
+	Phone  string
+
+	CTime int64 // 创建时间
+	UTime int64 // 更新时间
 }
 
 func NewUserDao(db *gorm.DB) *UserDao {
@@ -52,4 +57,15 @@ func (dao *UserDao) SelectByEmail(ctx context.Context, email string) (User, erro
 	var u User
 	err := dao.db.WithContext(ctx).Where("email = ?", email).First(&u).Error
 	return u, err
+}
+
+func (dao *UserDao) SelectById(ctx context.Context, id int64) (User, error) {
+	var u User
+	err := dao.db.WithContext(ctx).Where("id = ?", id).First(&u).Error
+	return u, err
+}
+
+func (dao *UserDao) Update(ctx context.Context, id int64, user User) error {
+	err := dao.db.WithContext(ctx).Where("id = ?", id).Updates(&user).Error
+	return err
 }

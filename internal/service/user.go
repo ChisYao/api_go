@@ -39,6 +39,7 @@ func (svc *UserService) Login(context context.Context, email string, password st
 	if err == repository.ErrorUserNotFound {
 		return domain.User{}, ErrorInvalidEmailOrPassword
 	}
+
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -50,4 +51,12 @@ func (svc *UserService) Login(context context.Context, email string, password st
 	}
 
 	return u, nil
+}
+
+func (svc *UserService) Edit(context context.Context, id int64, user domain.User) error {
+	return svc.repo.Modify(context, id, user)
+}
+
+func (svc *UserService) Profile(context context.Context, id int64) (domain.User, error) {
+	return svc.repo.FindById(context, id)
 }
