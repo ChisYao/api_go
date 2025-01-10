@@ -1,0 +1,22 @@
+# 解释配置,配置的处理方式
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webook-record-service
+spec: # Deployment的规格说明
+  replicas: 3 # 部署的副本数量(Pod数量)
+  selector: # 筛选器
+    matchLabels:
+      app: webook-record
+  template: # 创建Pod的模板
+    metadata:
+      labels:
+        app: webook-record # 当前webook-record需要与前面的selector-matchLabels的进行匹配
+    spec: # Deployment管理的Pod的模板
+      # Pod中运行的所有的container
+      containers:
+        - name: webook-record
+          image: chis/webook
+          ports:
+            - containerPort: 8080
+

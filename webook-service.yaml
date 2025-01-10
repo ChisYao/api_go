@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webook-record
+spec:
+  selector: # 筛选器,需要与Deployment中配置的一致
+    app: webook-record
+  ports:
+    - protocol: TCP
+      name: http
+      # 对外端口,可以存在多个
+      port: 98
+      # 转发端口,需要与deployment中的containerPort一致
+      targetPort: 8080
+  type: LoadBalancer # 逻辑上的负载均衡
+  

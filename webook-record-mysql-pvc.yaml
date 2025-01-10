@@ -1,0 +1,15 @@
+# 描述mysql的存储结构需要的特征
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: webook-mysql-pvc
+spec:
+  storageClassName: record
+  accessModes:
+  # 被一个Pod读写
+    - ReadWriteOnce
+  # 需要的资源部分
+  resources:
+    requests:
+      # 需要一个G的容量
+      storage: 1Gi

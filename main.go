@@ -12,22 +12,26 @@ import (
 	"go_web/internal/web/middlewares/login"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"net/http"
 	"time"
 )
 
 func main() {
 	// 初始化表格.数据库驱动
-	db := initDB()
+	//db := initDB()
 	// 初始化引擎,加载middleware
 	engine := initEngine()
 
+	engine.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "hello world!")
+	})
 	// 注册校验方式
-	initNormalLoginCheck(engine)
+	//initNormalLoginCheck(engine)
 
 	// 加载User区块的配置信息
-	initUserHandler(db, engine)
+	//initUserHandler(db, engine)
 	// 引擎挂载端口
-	engine.Run(":8081")
+	engine.Run(":8080")
 }
 
 // 初始化数据库链接驱动,创建表格,返回驱动对象
